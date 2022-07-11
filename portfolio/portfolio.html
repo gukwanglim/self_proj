@@ -16,7 +16,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", sans-serif}
 <!-- Sidebar/menu -->
 <nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
   <div class="w3-container">
-    <a href="#" onclick="w3_close()" class="w3-hide-large w3-right w3-jumbo w3-padding w3-hover-grey" title="close menu">
+    <a href="#" onclick="w3_close()" class="w3-hide-large w3-xlarge w3-right w3-padding w3-hover-grey" title="close menu">
       <i class="fa fa-remove"></i>
     </a>
     <img src="images.jpg" style="width:65%;" class="w3-round"><br><br>
@@ -24,7 +24,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", sans-serif}
     <p class="w3-text-grey">1996.07.11</p>
   </div>
   <div class="w3-bar-block">
-    <a href="#portfolio" onclick="w3_close()" class="w3-bar-item w3-button w3-padding w3-text-teal"><i class="fa fa-th-large fa-fw w3-margin-right"></i>PORTFOLIO</a> 
+    <a href="#portfolio" onclick="w3_close()" class="w3-bar-item w3-button w3-padding"><i class="fa fa-th-large fa-fw w3-margin-right"></i>PORTFOLIO</a> 
     <a href="#about" onclick="w3_close()" class="w3-bar-item w3-button w3-padding"><i class="fa fa-user fa-fw w3-margin-right"></i>ABOUT</a> 
     <a href="#contact" onclick="w3_close()" class="w3-bar-item w3-button w3-padding"><i class="fa fa-envelope fa-fw w3-margin-right"></i>CONTACT</a>
   </div>
@@ -46,16 +46,16 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", sans-serif}
 
   <!-- Header -->
   <header id="portfolio">
-    <a href="#"><img src="/w3images/avatar_g2.jpg" style="width:65px;" class="w3-circle w3-right w3-margin w3-hide-large w3-hover-opacity"></a>
-    <span class="w3-button w3-hide-large w3-xxlarge w3-hover-text-grey" onclick="w3_open()"><i class="fa fa-bars"></i></span>
+    <a href="#"><img src="cat.jpg" style="width:65px;" class="w3-circle w3-right w3-margin w3-hide-large w3-hover-opacity"></a>
+    <span class="w3-button w3-hide-large w3-xlarge w3-hover-text-grey" onclick="w3_open()"><i class="fa fa-bars"></i></span>
     <div class="w3-container">
-    <h1><b>My Portfolio</b></h1>
+    <h1><b>Gu Portfolio</b></h1>
     <div class="w3-section w3-bottombar w3-padding-16">
       <span class="w3-margin-right">Filter:</span> 
       <button class="w3-button w3-black">ALL</button>
-      <button class="w3-button w3-white"><i class="fa fa-diamond w3-margin-right"></i>Design</button>
-      <button class="w3-button w3-white w3-hide-small"><i class="fa fa-photo w3-margin-right"></i>Photos</button>
-      <button class="w3-button w3-white w3-hide-small"><i class="fa fa-map-pin w3-margin-right"></i>Art</button>
+      <button class="w3-button w3-white">STUDY</button>
+      <button class="w3-button w3-white w3-hide-small">PROJECT</button>
+      <button class="w3-button w3-white w3-hide-small">IDEA</button>
     </div>
     </div>
   </header>
@@ -218,17 +218,48 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", sans-serif}
   <div class="w3-container w3-padding-large w3-grey">
     <h4 id="contact"><b>Contact</b></h4>
     <div class="w3-row-padding w3-center w3-padding-24" style="margin:0 -16px">
-      <div class="w3-third w3-dark-grey">
+      <div id="button1" class="w3-button w3-third w3-dark-grey">
         <p><i class="fa fa-envelope w3-xxlarge w3-text-light-grey"></i></p>
-        <p>gukwanglim@gmail.com</p>
+        <p id="email">gukwanglim@gmail.com</p>
+        <script>
+        function copyClipboard() {
+          const text = document.getElementById('email').textContent;
+          const textarea = document.createElement('textarea');
+          textarea.textContent = text;
+          document.body.append(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+        const button_1 = document.getElementById('button1');
+        button_1.addEventListener('click', copyClipboard);
+      </script>
       </div>
-      <div class="w3-third w3-teal">
+      <div id="button2" class="w3-button w3-third w3-teal">
         <p><i class="fa fa-github w3-xxlarge w3-text-light-grey"></i></p>
         <p>github</p>
+        <script>
+          document.getElementById("button2").onclick = function () {
+              window.open("https://github.com/gukwanglim");
+          };
+      </script>
       </div>
-      <div class="w3-third w3-dark-grey">
+      <div id="button3" class="w3-button w3-third w3-dark-grey">
         <p><i class="fa fa-phone w3-xxlarge w3-text-light-grey"></i></p>
-        <p>010-9194-8612</p>
+        <p id="phon_number">010-9194-8612</p>
+        <script>
+          function copyClipboard() {
+          const text = document.getElementById('phon_number').textContent;
+          const textarea = document.createElement('textarea');
+          textarea.textContent = text;
+          document.body.append(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+        const button_3 = document.getElementById('button3');
+        button_3.addEventListener('click', copyClipboard);
+        </script>
       </div>
     </div>
     <hr class="w3-opacity">

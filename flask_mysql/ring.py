@@ -1,3 +1,5 @@
+from email import charset
+from encodings import utf_8
 from flask import Flask, session, render_template, redirect, request, url_for
 from flask_mysqldb import MySQL
 
@@ -54,11 +56,12 @@ def register():
         pw = request.form['regi_pw']
         name = request.form['regi_name']
         email = request.form['regi_email']
+        pw_ck = request.form['regi_pw_ck']
 
         conn = mysql.connection
         cursor = conn.cursor()
 
-        sql = "INSERT INTO member(user_id, user_name, user_email, user_passwd) VALUES ('%s', '%s', '%s', '%s')" % (id, name, email, pw)
+        sql = "INSERT INTO member(user_id, user_name, user_email, user_passwd, user_pw_ck) VALUES ('%s', '%s', '%s', '%s', '%s')" % (id, name, email, pw, pw_ck) 
         cursor.execute(sql)
 
         data = cursor.fetchall()

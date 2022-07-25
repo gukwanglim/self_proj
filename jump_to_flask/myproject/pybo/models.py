@@ -48,3 +48,15 @@ class Answer(db.Model):
 
     content = db.Column(db.Text(), nullable=False)
     create_date = db.Column(db.DateTime(), nullable=False)
+
+# 회원 모델
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+
+    # unique=True는 "같은 값을 저장할 수 없다"를 뜻
+
+# 위에서 질문, 답변 모델을 실행시킨 후, 회원 모델을 추가 시켰다면 flask db migrate를 사용하여 리비전 파일을 생성해야한다
+# 리비전 파일은 migragtions 파일 안의 versions 파일에 저장됨

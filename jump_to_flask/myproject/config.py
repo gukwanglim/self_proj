@@ -12,3 +12,6 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # SQLALCHEMY_DATABASE_URI 설정에 의해 SQLite 데이터베이스가 사용되고 데이터베이스 파일은 프로젝트 홈 디렉터리 바로 밑에 pybo.db 파일로 저장
 # 파이썬 기본 패키지에 포함된 SQLite는 주로 소규모 프로젝트에서 사용하는 가벼운 파일을 기반으로 한 데이터베이스
+
+SECRET_KEY = "dev"
+# 실제 서비스를 운영할 때에는 "dev"처럼 유추하기 쉬운 문자열을 입력하면 안 된다.

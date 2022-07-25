@@ -1,0 +1,45 @@
+<h1>{{ question.subject }}</h1>
+<div>
+    {{ question.content }}
+</div>
+
+<!-- 답변표시하기 -->
+<h5>{{ question.answer_set|length }}개의 답변이 있습니다.</h5>
+<!-- 템플릿 필터는 | 문자 뒤에 추가해서 사용한다 -->
+<!-- 템플릿 내장 필터 https://jinja.palletsprojects.com/en/2.11.x/templates/#builtin-filters -->
+<div>
+    <ul>
+    {% for answer in question.answer_set %}
+        <li>{{ answer.content }}</li>
+    {% endfor %}
+    </ul>
+</div>
+
+<!-- 답변등록 버튼 만들기 -->
+<form action="{{ url_for('answer.create', question_id=question.id) }}" method="post" class="my-3">
+
+    <!-- CSRF 코드와 오류 표시 기능 추가 -->
+    {{ form.csrf_token }}
+    <!-- 오류표시 Start -->
+    {% if form.errors %}
+    <div class="alert alert-danger" role="alert">
+        {% for field, errors in form.errors.items() %}
+        <strong>{{ form[field].label }}</strong>
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- 오류표시 End -->
+
+    <div class="mb-3">
+        <textarea name="content" id="content" rows="15"></textarea>
+    </div>
+    
+    <input type="submit" value="답변등록">
+</form>
+
+<!-- question.subject와 question.content의 question은 render_template 함수에 전달한 질문 객체 -->

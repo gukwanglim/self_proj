@@ -5,6 +5,7 @@
  - 클론 코딩을 하는 이유 : 이전 프로젝트(쇼핑몰 만들기)에서 데이터베이스 사용에 아쉬움을 느끼고.
 
 
+
 <-- 프론트엔드 -->
 1. html 연동 : templates 파일 생성 -> 그 안에 프로젝트 파일과 같은 이름의 파일 생성(config) -> 그 안에 main.html파일 생성
   -> 이때 vs code는 templates 파일을 자동으로 설정하는 것이 아니므로 settings.py의 templates 부분에 BASE_DIR / 'templates' 작성
@@ -15,6 +16,69 @@
 
 2. css 파일 연동 (정적(static) 파일 기능) : settings.py의 STATIC_URL = '/static/' 아래에 STATICFILES_DIRS = [BASE_DIR / 'static] 작성
   -> manage.py가 있는 위치에 static 파일 생성 -> static 안에 css 파일 생성 후, style.css 생성 -> css를 사용하는 파일의 제일 위에 {{% load static %}} -> <head> 부분에 <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+3. 팝업은 브라우저에서 특정 웹페이지에 들어갔을 때 새로운 브라우저가 뜨면서 새로운 화면이 뜨는 것.
+   모달은 팝업과 달리 새로운 브라우저창이 뜨지 않습니다. 대신 기존 화면 위에 새로운 화면이 그려지는 것.
+
+  3-1. 모달 만들기 코드
+    const OO은 OO이라는 상수를 만들기 위한 코드. 상수는 변하지 않는 값으로 한 번 선엄하면 그 뒤로 값을 바꿀 수 없음.
+    여기서는 const modal = document.getElementById("modal_add_feed"); 을 사용하여 document(이 문서('main.html)에서).getElementById("modal_add_feed");(modal_add_feed 이라는 id를 가지고 상수라 정의한다.) - buttonAddFeed도 마찬가지
+    (상수 : const의 반대는 변수 : var 이다.)
+
+    마지막으로 buttonAddFeed.addEventListener() 같은 경우는 buttonAddFeed에 addEventListener(이벤트)가 들어오면 ()안의 내용을 실행.
+    여기에서는 "click", e => {modal.style.display = "flex";}로 버튼을 클릭할 경우, modal이라고 정의한 id에서 사용된 css의 display 부분을 'flex'로 바꿔라는 뜻.
+    
+    간단하게 동작을 설명하자면 원래 "modal_add_feed"에서는 display = "none"으로 실행이 안 되는 상황인데 버튼을 누르면 "flex"로 변경되며 실행.
+    반대로 닫기 버튼은 display를 다시 none으로 변경하여 안 보이게 만드는 것.
+
+  3-2. console.log(window.pageYOffset + " 위치")를 사용하여 현재 화면의 y 좌표를 알아내기 -> 스크롤을 내리고 모달을 펼치면 상단에 밀려 나오는 것을 modal.style.top을 현재 화면 위치로 정의하여 만들어준다
+
+  3-3. jquery 활용하기 : 제이쿼리는 자바스크립트와 비슷한데 필요한 몇몇 기능들을 짧게 사용할 수 있도록 만들어주는 라이브러리.
+
+      $('.modal_image_upload')을 작성하여 사용하고 싶은 css 구문에 불러오기(''을 사용하면 class를 불러오기 '' 대신 앞에 #만 붙이면 id를 사용)
+      on 안에(쉽게 말해 dragOver()의 형태가 아닌 dragOver만 사용) 함수를 호출할 때 아무것도 안 넣으면 event.data를 전달.
+
+      function dragOver(e)는 if 문을 사용하여 조건을 부과할 수 있음.
+      여기서 e는 아무것이나 사용해도 상관없다.(대충 event.data를 전달한다는 내용)
+
+      function dragOver(e) 안에 {console.log(e);}을 작성한 다음에 업로드 장소에 이미지를 올리면 콘솔에서 log가 변하는 것을 확인할 수 있다.
+      여기서 target을 보면 div.modal_image_upload를 가리키고 있습니다. 우리가 만든 div를 말하네요.
+      또한, function dragOver(e) 안에 {if 구문}을 넣으면 조건에 따라 css를 변경시킬 수 있다(여기서 e.type은 처음 on()을 설정할 당시 ''에 묶여있는 부분이다)
+
+  3-4. jquery에서 제일 중요한 부분은 e.dataTransfer = e.originalEvent.dataTransfer; var files =  e.dataTransfer.files; 두 줄.
+      첫 번째 줄은 jquery 특성상 적어야 하는 부분.
+      두 번째 줄은 files에 드래그한 파일이 들어가게 되는 부분.(var files는 '리스트'형태)
+
+  3-5. 이미지를 업로드 할 경우, "url(" + window.URL.createObjectURL(files[0]) + ")"를 사용하여 css의 수정을 거쳐 올릴 수 있게 만든다.
+
+  3-6. 이미지를 업로드하고 공유 버튼을 눌렀을 때 실행 : 
+      1단계 - 화면에서 데이터를 끌어오는 단계
+      2단계 - 끌어온 데이터를 백엔드 쪽(views.py)으로 넘기는 단계
+
+      1단계(프론트)      
+        데이터를 모으는 단계에서는 input값에 적은 feed의 글내용과 이미지, 글쓴이 정보를 jquery를 이용해 가져옵니다. 그리고 ajax통신을 통해 django에 views.py에 만들어놓은 함수로 보내게 됩니다. 
+
+        script.js 파일에서 $('#button_write_feed').on('click' 이 부분이 데이터를 긁어오는 부분으로 image, content, profile_image, user_id, file을 가져와서 데이터가 비어있는지 채워져 있는지 체크.
+        이렇게 input데이터를 검증하는 코드는 프론트에 위치할 수도 있고 백엔드에도 위치할 수 있습니다.
+
+      2단계(프론트에 가까운 백엔드)
+        데이터를 서버로 전송하는 역할은 function writeFeed(fd)라는 함수가 하게 됩니다.
+        ajax를 이용해서 api 호출하게 되는데 fd라는 formdata를 넘기게 됩니다.
+        데이터를 긁어 오는 곳에서 formdata를 만들게 되는데, 파일을 전송하게 위해서는 formdata를 사용해야 합니다.
+        파일이 아닌 일반적인 데이터 같은 경우는 json형태로 넘기는 게 보통입니다. (rest 표준)
+
+        ajax에 success와 error, complete function이 있는데, 각각 성공, 실패, 완료 후 실행되는 callback함수입니다. callback함수는 특정 조건에서 호출되는 함수라는 의미입니다.
+        (complete는 성공이든 실패든 요청이 끝나면 무조건 실행)
+
+        즉, 성공이든 실패든 modal창을 닫기 위해 complete안에 closeModal();을 넣어 modal을 닫아줍니다.
+        그리고 업로드한 feed를 메인화면에서 확인할 수 있게 화면은 새로고침해(location.reload();)줍니다.
+
+        url을 /content/upload로 만들었기 때문에 해당 경로에 views.py에 함수를 만들어 연결시켜 줍니다.
+        config/views.py에 class Main아래 UploadFeed를 만들어줍니다.
+
+        {백엔드 4번으로..}
+
+
 
 
 <-- 백엔드 -->
@@ -42,3 +106,35 @@ class 모델명(models.Model): 이 기본형.
 3. models.py에서 만든 DB에서 main.html로 데이터를 이동(views.py(content 안에 있는 것이 아닌 config(처음 만든 프로젝트 파일)에 있는 것)) : views.py에서 content.models에 있는 Feed 불러오기 
   -> 여기서 dict 형태로 넣으면 key가 feed_list이고, value가 테이블에 작성한 데이터. (여기서 테이블에 한글이 안 들어갈 경우 ALTER TABLE 테이블명 CONVERT TO CHARSET UTF8; 쿼리를 사용)
   -> sqlite에서와 마찬가지로 [{}, {}, {}] 이런 형식으로 들어가있음. 즉, feed_list[0].image 형식으로 불러오기 가능
+
+
+4. 업로드된 정보를 받아오기 위해서 config/views.py의 Main() 함수 아래 UploadFeed() 함수 생성.
+  file을 처리하기 위해서는 request.FILES를 통해서 파일을 읽어와야 합니다. 여기서는 uuid라는 값을 랜덤으로 만들어서 해당 파일의 고유 id값으로 사용하고 있습니다.
+
+  save_path = os.path.join(MEDIA_ROOT, uuid_name)에서 MEDIA_ROOT는 settings.py에서 MEDIA_URL과 MEDIA_ROOT를 만들어서 설정.
+  config/settings.py에서 MEDIA_URL = '/media/'와 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')를 작성.
+
+  static은 서버를 돌릴 때 필요한 파일들이고, media는 사용자가 올리는 파일들을 관리하는 곳.
+  다시 말해, 사용자들이 올리는 이미지는 media에 저장되게 됩니다.
+
+  파일을 제외한 데이터는 request.data.get을 통해 가져올 수 있다.(config/views.py에서 UploadFeed 클래스의 content, profile_image, user_id)
+
+  request.data.get을 통해 가져온 데이터를 가지고 Feed.objects.create를 통해 새로운 Feed를 만들 수 있습니다.
+
+  그리고 클라이언트에게 status=200인 응답(Response)을 줍니다.
+
+5. views.py에서 함수를 만들었으니 urls.py에서 함수에 url을 할당.추가로 사용자들이 업로드한 이미지를 사용할 수 있도록 media에 대한 url도 추가해줘야 합니다.
+  추가로 사용자들이 업로드한 이미지를 사용할 수 있도록 media에 대한 url도 추가해줘야 합니다.
+
+6. 'content/upload'로 접속할 경우 UploadFeed를 실행합니다.
+  config/urls.py 파일에서 urlpatterns 아래 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 코드가 media경로를 url에 포함하는 코드입니다.
+  요걸 해줘야 우리가 파일을 올리면 ~/medai/{파일 이름}으로 조회할 수 있습니다.
+
+
+
+
+POST 방식이란 GET 방식과는 다르게 데이터를 생성하거나 수정 및 삭제 요청을 할 때 주로 사용되는 HTTP 메소드 
+
+
+
+포폴에 올릴 오류사진 2번은 media 파일 안에 엄로드할 이미지를 넣어놓고 그 이미지를 사용하지 않아서 생긴 문제이다.

@@ -15,7 +15,9 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path
-from .views import Main
+from .views import Main, UploadFeed
+from django.conf import settings
+from django.conf.urls.static import static
 
 # urlpatterns = [
 #     path('admin/', admin.site.urls),          # 장고를 시작하고 127.0.0.1:8000 뒤에 admin을 적으면 admin.site.urls가 실행된다
@@ -24,5 +26,8 @@ from .views import Main
 
 # views.py에 Main class를 만든 후, 이곳에 작성하여 연결
 urlpatterns = [
-    path('', Main.as_view())
+    path('', Main.as_view()),
+    path('content/upload', UploadFeed.as_view())          # views.py에서 UploadFeed class를 만들었으니 연결
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)     # 사용자들이 업로드한 이미지를 사용할 수 있도록 media에 대한 url도 추가

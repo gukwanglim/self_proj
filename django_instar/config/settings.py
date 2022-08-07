@@ -28,7 +28,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 # 무엇인가를 install하면 여기에 알려줘야함
 INSTALLED_APPS = [
@@ -39,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'content'
+    'content',
+    'user',
+    'config'
 ]
 
 TIME_ZONE = 'Asia/Seoul'
@@ -85,7 +86,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jango_outstar',
+        'NAME': 'jango_star',
         'USER' : 'root',
         'PASSWORD' : '1q2w3e4r',
         'HOST' : '127.0.0.1',

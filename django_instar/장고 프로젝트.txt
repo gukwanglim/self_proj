@@ -76,7 +76,9 @@
         url을 /content/upload로 만들었기 때문에 해당 경로에 views.py에 함수를 만들어 연결시켜 줍니다.
         config/views.py에 class Main아래 UploadFeed를 만들어줍니다.
 
-        {백엔드 4번으로..}
+        { 백엔드 4번으로.. }
+
+4. 로그인, 회원가입 html 만들기 : templates 파일 안에 user 파일 만들기
 
 
 
@@ -131,10 +133,89 @@ class 모델명(models.Model): 이 기본형.
   요걸 해줘야 우리가 파일을 올리면 ~/medai/{파일 이름}으로 조회할 수 있습니다.
 
 
+7. 로그인, 회원가입 만들었기
+  python manage.py startapp user을 사용하여 user 앱을 만든다. - 앱을 만들었으니 당연히 settings.py의 INSTALLED_APP 부분에 user 추가 - 장고에서 기본적으로 제공해주는 사용자 모델은 추가적인 기능들을 제공
+  그렇게 때문에 커스텀 유저 모델을 사용. - user/models.py에서 User class 생성(장고에서 제공하는 기본적인 사용자 모델을 사용하기 위해서는 AbstractBaseUser라는 클래스를 상속)
+  - 이전에 다른 모델 만들 때는 class 모델명(models.Model)이라고 한 반면, 사용자 모델은 class User(AbstractBaseUser)
+
+  USERNAME_FIELD = 'id'는 사용자의 이름값을 'id'필드로 사용
+  REQUIRED_FIELDS는 사용자 데이터를 만들 때 꼭 필요한 데이터 필드(프라이머리키 라고 설명할 수 있겠다)
+
+  우리가 만든 User모델이 Django기본 유저 모델이라는 것을 명시해줘야 합니다. - settings.py에서 AUTH_USER_MODEL = 'user.User' 추가.
+  password라는 필드를 따로 정의해주지 않았는데도 필드가 있다는 점.
+  또한, mariadb를 보면 기본적으로 auth_user라는 테이블이 만들어져있기 때문에 데이터베이스를 지운 다음에 python manage.py makemigrations과 migrate을 실행
+  AbstractBaseUser를 상속받아서 사용하면 좋은 점 중에 하나인데, password 필드가 자동으로 암호화되어서 저장되기 때문에 저희가 따로 암호화 로직을 넣어줄 필요가 없습니다.
+
+  { 프론트엔드 4번으로 ..}
+
+8. exists()라는 함수를 이용해 중복을 체크하여 이미 존재하는 이메일, 아이디로 회원가입하는 것을 방지. input email과 동일한 email의 데이터가 있으면 True, 없으면 False를 반환.
+  password=password가 아니라 password=make_password(password)라고 적힌 부분에서 password를 암호화.
+
+
 
 
 POST 방식이란 GET 방식과는 다르게 데이터를 생성하거나 수정 및 삭제 요청을 할 때 주로 사용되는 HTTP 메소드 
 
 
 
-포폴에 올릴 오류사진 2번은 media 파일 안에 엄로드할 이미지를 넣어놓고 그 이미지를 사용하지 않아서 생긴 문제이다.
+- 포폴에 올릴 오류사진 2번은 데이터베이스가 한글을 받아들이지 못해서 생긴 오류이다. 
+  MySQLdb.OperationalError: (1366, "Incorrect string value: '\\xEC\\x9D\\xB4\\xEB\\xA0\\x87...' for column `jango_star`.`content_feed`.`content` at row 1")의 문장을 보면 Feed 테이블의 content 부분이 들어가지 못하는 것을 확인할 수 있는데
+  한글을 받아들이지 못할 경우 발생하여 데이터베이스의 쿼리문 ALTER TABLE content_feed CONVERT TO CHARSET UTF8을 실행하면 해결할 수 있다.
+
+- 포폴에 올릴 오류사진 3번은 main.html에서 {% get_media_prefix %} (location 주소) 부분을 넣지 않았기 때문이다.
+
+
+
+
+
+<html 부분을 제외하고 데이터베이스 부터 다시 시작>
+
+위 내용에서 틀린 부분 :
+ 1. 위에서는 config(프로젝트 파일)에 views.py를 만들고 content 파일 안에 만든 views.py를 사용하지 않았는데 사실은 둘 다 사용해야한다.
+  1-1. config/views.py는 단순하게 html을 연결해주는 통로라고 생각하면 된다.
+  1-2. content/views.py가 실제로 데이터베이스에서 정보를 받아오거나 뿌려주는 역할을 한다.
+  즉, 기존의 config/views.py에 작성해놓은 코드를 지우고 다시 설정해야한다는 뜻이다. 또한, 블로그에는 로그인, 회원가입 부분에 대한 설명이 생략된 부분이 절반 이상이라고 생각된다.
+
+
+
+
+<-- 처음부터 시작 -->
+
+1. urls.py부분은 127.0.0.1:8000 의 뒤편에 /main 등으로 불러낼 수 있는 경로를 설정한다.(html을 부르는 것이 아닌 views.py에 정의된 class를 불러낸다.)
+
+2. views.py는 class(Main과 같은)를 정의하고 그 안에 def로 작동할 함수를 정의하여 html을 불러낸다.(여기서 return render(request, "config/main.html")의 형식으로 html 파일을 불러낸다.)
+ 2-1. 여기서 만약 settings.py에 존재하는 DEBUG를 False로 한다면 오류사진 1번과 같이 나오는 것이 아닌 그냥 404 페이지가 뜰 것이다. 다시 말해, DEBUG 모드를 사용했기 때문에 어떤 문제가 있는지 알려주는 것이다.
+
+3.python manage.py startapp content 를 사용하여 conten, user 앱을 만들었으면 이것을 앱이라고 인식할 수 있도록 config/settings.py의 INSTALLED_APPS 부분에 추가시켜줘야한다.(여기서는 프로젝트 파일인 config도 app처럼 사용하기 때문에 config도 마찬가지로 추가시켰다.)
+
+4. 데이터베이스에서 정보를 가져오기 위해서는 views.py(urls.py와 연동되어있는 클래스를 가지고 있는 곳)에서 데이터베이스의 테이블명을 import 해야한다.
+ 4-1. 데이터베이스 안의 정보는 Feed.objects.all()으로 가져올 수 있다. 여기서 만약 테이블 안 내용 중 하나를 들고 오고 싶다면 for 구문으로 돌리고 .name 등으로 부른다.
+ 4-2. 또한, 데이터베이스에서 받은 정보를 python으로 넘겨줄 때는 return render(request, "config/main.html", context=dict(feed_list=feed_list))처럼 context로 불러들인다.
+  4-2-1. 여기서 context는 dict의 형태로 받아야 하며 기본 디폴트 값은 json 파일로 받아야 하지만 dict의 형태가 json과 연관이 있어 사용해도 문제가 없다.
+
+5. close 버튼을 눌렀을 때, 첫번째 모달에서만 작동하고 두번째 모달에서 작동하지 않았던 문제를 해결하기 위해서는 close 버튼을 눌렀을 때 작동하는 것을 함수로 만들고 close 아이콘 앞 class 부분에 modal_close를 넣어주면 해결이 가능하다.
+
+6. AJAX란, JavaScript의 라이브러리중 하나이며 Asynchronous Javascript And Xml(비동기식 자바스크립트와 xml)의 약자이다. 브라우저가 가지고있는 XMLHttpRequest 객체를 이용해서 전체 페이지를 새로 고치지 않고도 페이지의 일부만을 위한 데이터를 로드하는 기법 이며 JavaScript를 사용한 비동기 통신, 클라이언트와 서버간에 XML 데이터를 주고받는 기술이다.
+  즉, 쉽게 말하자면 자바스크립트를 통해서 서버에 데이터를 요청하는 것이다.
+  6-1. 파일(이미지) 업로드는 비동기화로 이뤄져야한다.
+  6-2. ajax를 이용하여 html에 올라온 정보를 데이터베이스로 넘겨주어야 한다.
+  6-3. 데이터베이스에 올려주기 위해서는 '공유하기' 버튼을 눌렀을 때 작동하는 함수를 js 파일에서 ajax로 만들고 url: "/content/upload"의 형식으로 보내준 다음 content/views.py에서 UploadFeed class를 만들어야한다.
+  6-4. 만약 views.py에서 연동시켜주지 않으면 '공유하기'를 눌러도 데이터베이스에 정보가 올라가지 않는다.
+  6-5. 또한, config/urls.py에 path를 설정해줘야 제대로 작동한다.(처음 js 파일에서 ajax를 선언할 때, url: "/content/upload"로 했기 때문에)
+
+7. content/views.py에서 UploadFeed class 만들기.
+  7-1. 이때 데이터베이스에는 파일(이미지)를 저장하는 것이 아닌 경로를 저장하는 것인데, 실제 서버에서는 이미지를 따로 저장하는 곳이 있지만 장고에서는 media 파일에 저장하여 사용한다.(media 파일을 만들어준다.)
+  7-2. media 파일을 만들고, settinns.py에서 MEDIA_URL = '/media/', MEDIA_ROOT = os.path.join(BASE_DIR, 'media')을 작성한다.(여기서 MEDIA_URL = '/media/'은 항상 media로 저장한도록 설정하는 것이다.)
+  7-3. config/urls.py에 urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)를 작성하여 media에 올라간 이미지 파일을 조회할 수 있게 만든다.
+
+8. content/views.py의 UploadFeed class 추가 설명.
+  8-1. file = request.FILES['file'] : file을 처리하기 위해서는 request.FILES를 통해서 파일을 읽어와야 함.(파일 불러오기)
+  8-2. uuid_name = uuid4().hex : id를 만드는데 순서대로 만드는 것이 아닌 uuid를 사용하여 값을 랜덤으로 만들어서 고유 id값으로 사용.(이미지 이름이 한글, 영어, 특수문자 등이 섞여 있을 수 있으므로 유효 아이디를 생성)
+  8-3. save_path = os.path.join(MEDIA_ROOT, uuid_name) : MEDIA_ROOT는 settings.py에서 MEDIA_URL과 MEDIA_ROOT를 만들어서 설정.(사용자가 올리는 파일), (즉, 'media/유효아이디'의 형태로 저장하겠다.)
+  8-4. image = uuid_name : image는 유효아이디를 가져왔기 때문에 다른 정보(ex - content = request.data.get('content'))의 형식이 아닌 위에서 정의한 uuid_name을 사용하여 불러온다.
+  8-5. Feed.objects.create(content=content, image=image, profile_image=profile_image, user_id=user_id, like_count=0) : 불러온 데이터는 정의한 테이블로 옮긴다.
+  8-6. return Response(status=200) : 클라이언트에게 status=200인 응답(Response)을 줍니다.(API)
+
+9. 8번의 과정을 마치면 데이터베이스의 image 부분에는 내가 올린 이미지의 유효아이디가 저장된다. 즉, 127.0.0.1:8000 페이지에 올라가는 사진은 엑박으로 나온다는 뜻이다.
+  9-1. 1차적인 방식으로 이 문제를 해결하기 위해서는 데이터베이스에 image를 http://127.0.0.1:8000/media/유효아이디 의 형태로 넣어주면 되지만 복잡한 방법이된다.
+  9-2. 장고에서 사용할 수 있는 디폴트 경로({% get_media_prefix %})를 사용하면 된다.(단, {% get_media_prefix %}을 사용하기 위해서는 {% load static %}을 작성한 상태여야한다.)

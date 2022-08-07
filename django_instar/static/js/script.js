@@ -23,6 +23,20 @@ buttonAddFeed.addEventListener("click", e => {
     console.log(window.pageYOffset + " 위치");    // 로그 찍기(화면이 내려간 상태에서 모달을 띄워도 상단에 고정되는 문제를 해결하기 위해)
 });
 
+
+// 위 script 코드를 이런 식으로 jquery를 만들어서 사용할 수도 있음
+// $('#nav_bar_add_box').click(function () {
+//     $('#first_modal').css({
+//         display: 'flex'
+//     });
+
+//     $(document.body).css({
+//         overflow: 'hidden'
+//     });
+
+// });
+
+
 // 모달 닫기 코드
 // const buttonCloseModal = document.getElementById("close_modal");
 // buttonCloseModal.addEventListener("click", e => {
@@ -36,7 +50,7 @@ buttonAddFeed.addEventListener("click", e => {
                    // jquery 부분
 
 //위와 같이 사용해도 기능은 작동하지만 따로 함수를 만들면 더 편해진다.
-$('#close_modal').on("click", () => {
+$('.close_modal').on("click", () => {
     closeModal();
 });
 
@@ -95,7 +109,7 @@ function dragOver(e){    // 여기서 e는 아무것이나 사용해도 상관�
 
 
 // 이미지를 drop 했을 때 작동하는 함수
-let files;
+let files;                              // function 밖에서 files를 let으로 정의했기 때문에 어디서든 files를 불러와서 사용할 수 있다.
 function uploadFiles(e){
 
     // console.log(files)
@@ -133,6 +147,8 @@ function uploadFiles(e){
         "outline-offset": "-10px"
     });
 
+    console.log(files[0].name)
+
     // 만약 올린 파일이 이미지가 아니면 경고
     // 혹은 올린 파일이 이미지가 맞다면 css에서 background로 지정 
     if (files[0].type.match(/image.*/)) {
@@ -149,7 +165,7 @@ function uploadFiles(e){
         });
 
         $('.modal_image_upload_content').css({
-            "background-image": "url(" + window.URL.createObjectURL(files[0]) + ")",
+            "background-image": "url(" + 'media/' + files[0].name + ")",
             "outline": "none",
             "background-size": "contain",
             "background-repeat" : "no-repeat",
@@ -160,9 +176,9 @@ function uploadFiles(e){
             display: 'none'
         })
 
-        $('#close_modal_2').on('click', ()=>{
-            closeModal();
-        })
+        // $('#close_modal_2').on('click', ()=>{
+        //     closeModal();
+        // })
 
     }
 
@@ -176,10 +192,13 @@ function uploadFiles(e){
 
 // $('#button_write_feed').on('click' 이 부분이 데이터를 긁어오는 부분
 $('#button_write_feed').on('click', ()=>{
-    const image = $('#input_image').css("background-image").replace(/^url\(['"](.+)['"]\)/, '$1');
+    const image = $('#input_image').css("background-image");
     const content = $('#input_content').val();
     const profile_image = $('#input_profile_image').attr('src');
     const user_id = $('#input_user_id').text();
+
+    // image = $('#input_image').css("background-image");에는 /http://127.0.0.1:8000/fa24295d-469a-4be3-9a22-fbb280c7ff7f가 들어있다
+    // image = $('#input_image').css("background-image").replace(/^url\(['"](.+)['"]\)/, '$1');에는 http://127.0.0.1:8000/ada2b5e0-771a-4329-ab68-ac3aab6fa8cd가 들어있다
 
     console.log(image)
     // console.log(content)
@@ -188,10 +207,8 @@ $('#button_write_feed').on('click', ()=>{
 
     const file = files[0];
 
-    console.log(file.name)
 
-
-    let fd = new FormData();
+    let fd = new FormData();             // ajax에서 데이터를 서버로 받아오기 위해 FormData를 만들어 데이터를 저장해야한다.(쉽게 말해 데이터베이스에서 정보를 받아올 때 보여주는 형식과 같은 형식으로 만들어 준다고 생각하면 편하다.)
 
     fd.append('file', file);
     fd.append('image', image);
@@ -226,7 +243,7 @@ $('#button_write_feed').on('click', ()=>{
 // 데이터를 서버로 전송하는 함수
 function writeFeed(fd) {                 // ajax를 이용해 호출하여 fd라는 FormData를 넘김
     $.ajax({
-        url: "/content/upload",          // 해당 경로의 views.py에 함수를 만들어 연결시켜야함(그런데 왜 content 파일이 아닌 기존 프로젝트 파일인 config/views.py에 넣는거지?)
+        url: "/content/upload",          // 해당 경로의 views.py에 함수를 만들어 연결시켜야함(content/views.py에서 UploadFeed class 만들기) views.py에서 UploadFeed를 만들지 않으면 데이터베이스에 올라가지 않음.
         data: fd,
         method: "POST",
         processData: false,
@@ -234,16 +251,17 @@ function writeFeed(fd) {                 // ajax를 이용해 호출하여 fd라
 
         success: function (data) {
             console.log("성공");
+            alert('업로드 완료!');
         },
         error: function (request, status, error) {
             console.log(fd);
-            console.log(fd.profile_image);
             console.log("에러");
+            alert('업로드 실패!');
         },
         complete: function() {           // complete는 성공이든 실패든 요청이 끝나면 무조건 실행
             console.log("무조건실행");    // 따라서 실패, 성공 여부를 따지지 않고 closeModal();을 사용해 modal 창 닫기.
-            //closeModal();                // 또한, 업로드한 feed를 메인화면에서 확인할 수 있도록 새로고침(location.reload();)
-            //location.reload();
+            closeModal();                // 또한, 업로드한 feed를 메인화면에서 확인할 수 있도록 새로고침(location.reload();)
+            location.reload();
         }
     })
 };

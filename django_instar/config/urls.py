@@ -14,9 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 # from django.contrib import admin
-from django.urls import path
-from .views import Main, UploadFeed
-from django.conf import settings
+from django.contrib import admin
+from django.urls import path, include
+# from .views import Sub
+from content.views import Main, UploadFeed
+from .settings import MEDIA_URL, MEDIA_ROOT
 from django.conf.urls.static import static
 
 # urlpatterns = [
@@ -26,8 +28,8 @@ from django.conf.urls.static import static
 
 # views.py에 Main class를 만든 후, 이곳에 작성하여 연결
 urlpatterns = [
-    path('', Main.as_view()),
-    path('content/upload', UploadFeed.as_view())          # views.py에서 UploadFeed class를 만들었으니 연결
+    path('', Main.as_view()),                                       # content/views.py에서 Main class를 만들었으니 연결.
+    path('content/upload', UploadFeed.as_view())                   # script.js에서 '공유하기' 버튼 ajax를 설정할 때, url: "contnet/upload"로 설정하고 content/views.py에서 UploadFeed를 만들었기에 연결.
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)     # 사용자들이 업로드한 이미지를 사용할 수 있도록 media에 대한 url도 추가
+urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)     # 사용자들이 업로드한 이미지를 사용할 수 있도록 media에 대한 url도 추가. media에 이미지 파일을 저장하면 그것을 조회할 수 있게 만들어주는 코드.

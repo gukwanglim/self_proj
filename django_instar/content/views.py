@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Feed                          # , Reply, Like, Bookmark
-# from user.models import User
+from user.models import User
 import os
 from config.settings import MEDIA_ROOT
 
@@ -11,12 +11,13 @@ from config.settings import MEDIA_ROOT
 class Main(APIView):
     def get(self, request):
         print("겟으로 호출")
-
         feed_list = Feed.objects.all().order_by('-id')                # select * from contnet_feed;
+        # print('데이터베이스 안에 들어있는 내용 : ', feed_list)
 
-        print('데이터베이스 안에 들어있는 내용 : ', feed_list)
+        email = request.session.get('email', None)
+        user = User.objects.filter(email=email).first()
 
-        return render(request, "config/main.html", context=dict(feed_list=feed_list))
+        return render(request, "config/main.html", context=dict(feed_list=feed_list, user=user))
 
 # # 업로드 된 정보 받기(API 만들기)
 class UploadFeed(APIView):

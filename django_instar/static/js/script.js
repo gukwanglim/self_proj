@@ -2,39 +2,48 @@
 
 // modal이라는 상수를 만드는 코드입니다. 상수는 변하지 않는 값으로 한번 선언하면 그 뒤로 값을 바꿀 수 없습니다.
 // https://cholol.tistory.com/552?category=739855
-const modal = document.getElementById("modal_add_feed");
-const modal_content = document.getElementById("modal_add_feed_content");
+// const modal = document.getElementById("modal_add_feed");
+// const modal_content = document.getElementById("modal_add_feed_content");
 
-// 앞으로 buttonAddFeed를 쓰면 우리가 만든 add_box 아이콘을 가리킵니다.
-const buttonAddFeed = document.getElementById("add_feed");
+// // 앞으로 buttonAddFeed를 쓰면 우리가 만든 add_box 아이콘을 가리킵니다.
+// const buttonAddFeed = document.getElementById("add_feed");
 
-// 이벤트 리스너(addEventListener)를 붙이면 buttonAddFedd에 무슨 일이 일어날 경우 괄호 안에 코드가 실행됩니다.
-// 코드는 modal의 style, 즉 CSS에서 display옵션을 "flex"로 바꿔준다는 의미입니다.
-buttonAddFeed.addEventListener("click", e => {
+// // 이벤트 리스너(addEventListener)를 붙이면 buttonAddFedd에 무슨 일이 일어날 경우 괄호 안에 코드가 실행됩니다.
+// // 코드는 modal의 style, 즉 CSS에서 display옵션을 "flex"로 바꿔준다는 의미입니다.
+// buttonAddFeed.addEventListener("click", e => {
 
-    modal.style.top = window.pageYOffset + 'px'; // top을 이용해 시작 y위치를 바꿔줌. 즉, 현재 화면의 위치를 top이라고 설정하여 나오게 만든다. 
-                                            // 'px'를 포함해야지만 제대로 작동
-    modal_content.style.top = window.pageYOffset + 'px';
+//     modal.style.top = window.pageYOffset + 'px'; // top을 이용해 시작 y위치를 바꿔줌. 즉, 현재 화면의 위치를 top이라고 설정하여 나오게 만든다. 
+//                                             // 'px'를 포함해야지만 제대로 작동
+//     modal_content.style.top = window.pageYOffset + 'px';
 
-    modal.style.display = "flex";
-    document.body.style.overflowY = "hidden"; // 스크롤 없애기
+//     modal.style.display = "flex";
+//     document.body.style.overflowY = "hidden"; // 스크롤 없애기
 
-    // 개발자 모드에서 로그 확인 가능. pageYOffset은 현재 화면에 y 위치를 알려준다.
-    console.log(window.pageYOffset + " 위치");    // 로그 찍기(화면이 내려간 상태에서 모달을 띄워도 상단에 고정되는 문제를 해결하기 위해)
-});
+//     // 개발자 모드에서 로그 확인 가능. pageYOffset은 현재 화면에 y 위치를 알려준다.
+//     console.log(window.pageYOffset + " 위치");    // 로그 찍기(화면이 내려간 상태에서 모달을 띄워도 상단에 고정되는 문제를 해결하기 위해)
+// });
 
+
+
+// jquery 부분
 
 // 위 script 코드를 이런 식으로 jquery를 만들어서 사용할 수도 있음
-// $('#nav_bar_add_box').click(function () {
-//     $('#first_modal').css({
-//         display: 'flex'
-//     });
+$('#add_feed').click(function () {
 
-//     $(document.body).css({
-//         overflow: 'hidden'
-//     });
+    $('#modal_add_feed').css({
+        top: window.pageYOffset + 'px',                  // 이런 식으로 넣어줘야 현재 내가 보고 있는 위치에 모달이 나옴
+        display: 'flex'
+    });
 
-// });
+    // $('#modal_add_feed').css({
+    //     display: 'flex'
+    // });
+
+    $(document.body).css({
+        overflow: 'hidden'
+    });
+
+});
 
 
 // 모달 닫기 코드
@@ -47,29 +56,27 @@ buttonAddFeed.addEventListener("click", e => {
 
 
 
-                   // jquery 부분
-
 //위와 같이 사용해도 기능은 작동하지만 따로 함수를 만들면 더 편해진다.
 $('.close_modal').on("click", () => {
     closeModal();
 });
 
-$('#move_home').on("click",() =>{
-    $('#modal_add_feed_content').css({
-        top: window.pageYOffset + 'px',
-        display: 'flex'
-    });
-    $(document.body).css({
-        overflowY: "hidden"
-    });
-});
+// $('#move_home').on("click",() =>{
+//     $('#modal_add_feed_content').css({
+//         top: window.pageYOffset + 'px',
+//         display: 'flex'
+//     });
+//     $(document.body).css({
+//         overflowY: "hidden"
+//     });
+// });
 
 function closeModal() {
     $('.modal').css({
         display : 'none'
     });
     $(document.body).css({
-        overflowY : 'visible'
+        overflow : 'visible'
     });
 };
 
@@ -161,6 +168,7 @@ function uploadFiles(e){
 
 
         $('#modal_add_feed_content').css({
+            top: window.pageYOffset + 'px',
             display : 'flex'
         });
 
@@ -265,3 +273,69 @@ function writeFeed(fd) {                 // ajax를 이용해 호출하여 fd라
         }
     })
 };
+
+
+// 회원가입 부분
+$('#join_button').click(function () {
+
+    // alert("회원가입 버튼을 누르셨습니다.");
+
+    let email = $('#input_email').val();
+    let password = $('#input_password').val();
+    let nickname = $('#input_nickname').val();
+    let name = $('#input_name').val();
+
+    console.log(email, password, nickname, name);
+
+    $.ajax({
+        url: "/user/join",
+        data: {
+            email : email,
+            password : password,
+            nickname : nickname,
+            name : name
+        },
+        method: "POST",
+        success: function (data) {
+            console.log("성공");
+            alert("회원가입 성공했습니다. 로그인해주세요.");
+            location.replace('/user/login');                     // 회원가입 성공 시 로그인 페이지로 이동
+
+        },
+        error: function (request, status, error) {
+            alert("회원가입 실패했습니다. 정보를 정확히 기입해주세요.");
+            console.log("에러");
+        },
+        complete: function () {
+            console.log("완료");
+        }
+    });
+});
+
+
+// 로그인 부분
+$('#login_button').click(function () {
+
+    let email = $('#input_email').val();
+    let password = $('#input_password').val();
+
+    $.ajax({
+        url: "/user/login",
+        data: {
+            email : email,
+            password : password
+        },
+        method: "POST",
+        success: function (data) {
+            console.log("성공");
+            alert("로그인 성공");
+            location.replace('/');
+        },
+        error: function (request, status, error) {
+            console.log("에러");
+        },
+        complete: function () {
+            console.log("완료");
+        }
+    });
+});

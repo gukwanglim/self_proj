@@ -24,9 +24,10 @@ class Join(APIView):
                             nickname=nickname,
                             name=name,
                             password=make_password(password),           # 패스워드는 해시 암호화를 하여 보안.
-                            profile_image="default_profile.png")        # 프로필 이미지는 아직 사용자가 올리지 않았으므로 기본 이미지로 저장
+                            profile_image="image.gif")        # 프로필 이미지는 아직 사용자가 올리지 않았으므로 기본 이미지로 저장
 
         return Response(status=200)
+
 
 class Login(APIView):
     def get(self, request):
@@ -48,3 +49,33 @@ class Login(APIView):
             return Response(status=200)                                                 # (session에 저장하면 Login에만 적용되는 것이 아닌 Main등의 class가 실행되는 순간에도 정보를 가져올 수 있게 된다.)
         else:
             return Response(status=400, data=dict(message="회원정보가 잘못되었습니다."))
+
+
+class LogOut(APIView):
+    def get(self, request):
+        request.session.flush()
+        return render(request, "user/login.html")
+
+
+class UploadProfile(APIView):
+    def post(self, request):
+
+        # 일단 파일 불러와
+        file = request.FILES['file']
+        email = request.data.get('email')
+
+        uuid_name = uuid4().hex
+        save_path = os.path.join(MEDIA_ROOT, uuid_name)
+
+        with open(save_path, 'wb+') as destination:
+            for chunk in file.chunks():
+                destination.write(chunk)
+
+        profile_image = uuid_name
+
+        user = User.objects.filter(email=email).first()
+
+        user.profile_image = profile_image
+        user.save()                                # 파일을 만드는 것이 아닌 수정하는 것이므로 create가 아닌 save()를 사용.
+
+        return Response(status=200)

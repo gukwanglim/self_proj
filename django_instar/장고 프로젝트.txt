@@ -168,6 +168,8 @@ POST 방식이란 GET 방식과는 다르게 데이터를 생성하거나 수정
 
 - 4번 문제는 화면을 내린 상태에서 모달을 띄웠을 때 발생하는 문제이다. 이것은 모달을 띄우는 ajax 구문에서 $('#modal_add_feed').css({top: window.pageYOffset + 'px'})을 넣어주면 현재 위치에서 모달 띄우기가 가능해진다.
 
+- 6번 문제는 urls.py에서 해당하는 함수 (여기서는 LogOut)을 실행 시킬 수 있는 페이지로 넘어갈 수 있게 만들어줘야 하는데 그렇지 못했을 경우 생기는 문제이다.
+
 
 
 
@@ -251,3 +253,20 @@ POST 방식이란 GET 방식과는 다르게 데이터를 생성하거나 수정
     13-4-1. 만약, session에 정보가 담기게 된다면 이것은 Login에서만 사용할 수 있는 것이 아니라 다른 class가 작동하여도 가져와서 사용할 수 있다.
     13-4-2. 13-4-1로 인해 content/views.py 안의 Main class를 사용할 경우 email = request.session['email']로 불러와 user = User.objects.filter(email=email).first()로 사용할 수 있다.
       13-4-2-1. email = request.session.get('email', None) user = User.objects.filter(email=email).first() 이런 식으로 불러온다.
+
+14. 하다보면 css 파일을 변경해도 적용되지 않는 경우가 있다. 이럴때는 크롬(엣지를 사용하면 엣지)의 설정에 들어가서 캐시를 삭제해줘야 한다.
+
+15. 프로필 이미지 수정을 위해서는 onchange="profile_upload();" 기능을 이용해서 이미지의 이름을 가져오고(물론 ajax를 이용하여 데이터를 받을 수 있게 만들어놓아야 한다.) user/views.py에 UploadProfile class를 만든다.
+  15-0. onchange으로 받아온 정보는 jquery에서 file로 받아올 수 있다.
+  15-1. UploadProfile class를 만들었으면 당연히 user/urls.py에 연동을 시킨다.
+  15-2. 또한 ajax의 url: "/user/profile/upload"이므로 user/urls.py에는 profile/upload으로 연동시킨다.
+  15-3. user/veiws.py에서는 정보를 가져와 수정하는 것이므로 create()를 사용하는 것이 아닌 save()를 사용한다.
+  15-4. 전체적인 흐름을 설명하자면 user/views.py의 UploadProfile class가 기존에 저장되어 있는 사용자 데이터베이스를 가져오고 새롭게 올릴 프로필 사진의 이름을 uuid로 바꾼 다음 profile_image로 대체한다는 뜻.
+
+16. 데이터베이스 모델을 더 효율적으로 만들기(오류사진 5번)
+  16-1. 현재 피드를 올리기 위한 데이터베이스의 테이블 Feed는 content, image, profile_image, user_id, like_count로 들어가 있다. 하지만, 로그인을 해야만 피드를 올릴 수 있다면 굳이 이렇게 많은 정보를 수집할 필요가 없다.(댓글, 좋아요 등도 마찬가지로 나중에 나눌거다.)
+  16-2. 우선, Feed를 content, image, email 이렇게 3가지로 줄인다.(email도 필수적인 요소는 아니지만 디폴트값을 만들기 위해 넣었다고 생각하면 편하다.)
+  16-3. 이렇게 Feed의 컬럼을 줄이면 피드를 업로드하기 위해 필수적으로 들어가야하는 정보들을 Feed 테이블에서만 가져오기에는 문제가 생긴다.
+  16-4. 위 문제를 해결하기 위해 content/views.py에서 feed_object_list을 정의해 업로드된 피드를 볼 수 있는 리스트와 feed_list =[]을 만든다.
+  16-5. feed_object_list에 대해 for문을 돌리며 Feed, User 테이블에서 정보를 가져와 feed_list에 append 시킨다.
+  16-6. 이렇게 만들면 피드를 업로드 한 후, 프로필 이미지가 고정되어 있었는데 프로필 이미지를 변경했을 경우, 변경된 이미지를 불러와 과거에 업로드한 피드에 적용시킬 수 있다.

@@ -270,3 +270,39 @@ POST 방식이란 GET 방식과는 다르게 데이터를 생성하거나 수정
   16-4. 위 문제를 해결하기 위해 content/views.py에서 feed_object_list을 정의해 업로드된 피드를 볼 수 있는 리스트와 feed_list =[]을 만든다.
   16-5. feed_object_list에 대해 for문을 돌리며 Feed, User 테이블에서 정보를 가져와 feed_list에 append 시킨다.
   16-6. 이렇게 만들면 피드를 업로드 한 후, 프로필 이미지가 고정되어 있었는데 프로필 이미지를 변경했을 경우, 변경된 이미지를 불러와 과거에 업로드한 피드에 적용시킬 수 있다.
+
+17. 좋아요. 댓글, 북마크 등 만들기.
+  17-1. content/models.py에 Like, Reply, Bookmark 테이블 만들기.(각자의 id(1부터 시작해서 하나씩 늘어남)와 적은 사람의 이메일, 댓글 내용, 좋아요 눌렀으면 True, 한 번 더 눌렀으면 False 등을 받을 수 있게 만든다.)
+  17-2. content/views.py에 UploadReply, ToggleLike, ToggleBookmark class 만들기.(화면에 적힌 내용들을 받아와 데이터베이스에 저장.)
+  17-3. 위의 코드를 모두 진행하면 feed_object_list에 like_count, reply_list, is_liked, is_marked 등을 받아와 피드에 뿌릴 수 있다.
+
+18. 댓글 달기.
+  18-1. feed_object_list에 reply_list를 받아야 하는데 UploadReply class를 보면 email만 받아오게 된다. 우리에게는 email이 아닌 닉네임이 보여야하기 때문에 reply_object_list를 만들어 for구문을 돌려야한다.
+  18-2. 여기서 reply_object_list = Reply.objects.filter(feed_id=feed.id) 형식으로 Reply의 feed_id는 실제 feed의 id가 된다.(그 이유는 내가 댓글을 달 피드의 id를 가지고 있어야 그 id에 맞는 피드에 댓글이 올라가기 때문이다.)
+  18-3. main.html의 108번째 줄을 보면 <div feed_id="{{ feed.id }}"...>으로 코드가 적혀있는데 그 이유는 댓글을 달기 위해서는 피드의 id를 가져와야하지만 그 id를 알아낼 수 없기 때문에 feef_id를 특정값인 {{ feed.id }}로 받아낸 것이다.
+  18-4. 또한, main.html에 feed_id를 부여하기 위해서 content/views.py의 Main class 부분의 feed_list에 feed.id를 append 시킨다.
+  18-5. feed_id를 부여하고 실제로 django를 실행시킨 후, 댓글의 '게시' 버튼의 html을 읽어보면 (ctrl+shift+c) feed_id가 실제 데이터베이스에 적용되어 있는 id로 나오는 것을 확인할 수 있다.
+  18-6. '게시'에 feed_id를 부여한 것과 마찬가지로 '댓글달기' 부분에도 reply_{{ feed.id }}와 같이 id를 지정하여 '댓글달기' 부부의 text를 가져올 수 있게 만든다.
+  18-7. 여기서는 '게시'를  class="upload_reply"로 지정하고 ajax를 사용하여 '게시'를 클릭 시, upload_reply가 동작하게 만드는데 let feed_id = event.target.attributes.getNamedItem('feed_id').value;를 사용하면 '게시'를 클릭했을 때 id를 가져오게 만들 수 있다.
+  18-8. 위에서 가져온 id를 활용하면 '댓글달기'의 id도 손 쉽게 가져올 수 있다.
+  18-9. 물론 18-8.에서 가져온 id는 앞에 'reply_'만 붙여놓은 것이므로 let reply_content = $('#' + reply_id).val();를 이용해서 id로 불러와 '댓글달기'에 적힌 text를 가져올 수 있다.
+  18-10. 다른 ajax와 마찬가지로 url을 설정한 다음, content/urls.py에서 UploadReply를 연동.
+
+  18-11. 이때, 피드 업로드 방식을 사용하면 댓글을 올린 다음 화면 전체가 새로고침되는 방법을 사용하게 되는데 이것은 데이터베이스에 정보를 올리고 다시 받아오는 형식이라고 말할 수 있다.
+  18-12. 하지만, ajax를 사용하면 데이터베이스에 정보를 올린 후, 전체 화면을 새로고침하지 않고서도 화면에 div를 추가시켜 내가 추가시킨 부분만 새로고침되는 것을 볼 수 있다.
+  18-13. 이렇게 된다면 프로그램을 다시 실행했을 경우에는 데이터베이스에서 받아온 정보를 보는 것이 되고, 내가 댓글을 달면 그것을 곧바로 화면에서 볼 수 있게 되는 것이다.
+
+  18-14. 화면 갱신 방법(ajax)를 사용하기 위해서는 main.html의 댓글부분(데이터베이스에서 댓글을 받아와 for구문으로 돌리는 부분/main.html의 103번째 줄)을 <div>로 묶고 id="reply_list_{{ feed_id }}"라는 id를 부여한다.
+  18-15. 이렇게 된다면 댓글이 올라가는 부분은 id를 가지게 되고, 그 id를 찾아서 새로운 <div>(내가 적은 댓글)을 올릴 수 있게 된다.
+
+  18-16. 내가 업로드한 화면만 갱신하는 방법은 $("#reply_list_" + feed_id).append("<div class='feed_reply'><span class='feed_txt'><b>{{ user.nickname }}</b> " + reply_content + "</span></div>")를 사용하여 18-14.에서 만든 list에 추가시키는 방법이다.
+  18-17. 이렇게하면 내가 추가시킨 부분은 일시적으로 html에 추가되어 화면에 나오게되고, 새로고침을 할 경우 화면에만 추가된 부분은 사라지고 데이터베이스에서 정보를 불러와 갱신한다.
+  18-18. 만약, 댓글은 올라갔는데 댓글창에 내가 적은 글이 아직 남아있다면 $('#' + reply_id).val('');을 사용하여 댓글창을 초기화시킨다.
+
+
+
+
+
+
+* 유튜브 영상(https://www.youtube.com/watch?v=M8UPyeF5DfM&t=29006s)에서 10:04:51 근방에 클릭을 하여 정보를 얻을 수 있는 방식에 대한 설명이 나와있다.
+  script.js 파일의 424번째 줄에 대한 설명이다.(하지만 js 파일에서 {{ user.name }}과 같은 방식의 사용법을 몰라 main.html로 옮겼다./280번째 줄)

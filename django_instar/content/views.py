@@ -16,6 +16,8 @@ class Main(APIView):
 
         feed_list = []                                                       # content/models.py에서 Feed 테이블을 변경했기 때문에 여러 테이블에서 피드에 필요한 내용들을 뽑아내 리스크로 만들기.
 
+        email = request.session.get('email', None)
+
         for feed in feed_object_list:
             user = User.objects.filter(email=feed.email).first()
                                                                  # Reply의 feed_id는 실제 feed의 id가 된다.(그 이유는 내가 댓글을 달 피드의 id를 가지고 있어야 그 id에 맞는 피드에 댓글이 올라가기 때문이다.)
@@ -27,21 +29,21 @@ class Main(APIView):
                 reply_list.append(dict(reply_content=reply.reply_content,
                                        nickname=user.nickname))
 
-            # like_count=Like.objects.filter(feed_id=feed.id, is_like=True).count()
-            # is_liked=Like.objects.filter(feed_id=feed.id, email=email, is_like=True).exists()
-            # is_marked=Bookmark.objects.filter(feed_id=feed.id, email=email, is_marked=True).exists()
+            like_count=Like.objects.filter(feed_id=feed.id, is_like=True).count()                      # 특정 id 값을 가진 피드의 is_like에서 True로 받은 값의 개수만큼 숫자 증가
+            is_liked=Like.objects.filter(feed_id=feed.id, email=email, is_like=True).exists()          # 좋아요를 누른 피드(id)에서 만약, 로그인 한 사람의 이메일을 찾아낸다면 exists로 불러내고 하트에 불이 들어올 수 있게 만들기
+
+            is_marked=Bookmark.objects.filter(feed_id=feed.id, email=email, is_marked=True).exists()
             feed_list.append(dict(id=feed.id,                                                             # main.html의 108번째 줄에서 feed_id를 {{ feed.id }}로 선언하기 위해서 id=feed.id로 한다.
                                   image=feed.image,
                                   content=feed.content,
-                                #   like_count=like_count,
+                                  like_count=like_count,
                                   profile_image=user.profile_image,
                                   nickname=user.nickname,
                                   reply_list=reply_list,
-                                #   is_liked=is_liked,
-                                #   is_marked=is_marked
+                                  is_liked=is_liked,
+                                  is_marked=is_marked
                                   ))
 
-        email = request.session.get('email', None)
         user = User.objects.filter(email=email).first()
 
         return render(request, "config/main.html", context=dict(feed_list=feed_list, user=user))
@@ -76,12 +78,16 @@ class Profile(APIView):
     def get(self, request):
         email = request.session.get('email', None)
         user = User.objects.filter(email=email).first()
+                                                                                                                   # 내가 올린 피드, 내가 좋아요를 누른 피드, 내가 북마크를 누른 피드만 불러와 프로필에 저장.
+        feed_list = Feed.objects.filter(email=email)
+        like_list = list(Like.objects.filter(email=email, is_like=True).values_list('feed_id', flat=True))            # values_list()는 filter로 선택한 데이터 중에서 내가 필요로하는 필드를 선택하여 그것만 가지고 올 수 있게 한다. 
+        like_feed_list = Feed.objects.filter(id__in=like_list)                                                            # 또한, values_list() 안의 flat=True는 내가 가져온 데이터를 list의 형태로 가져오는 것이다.(flat=True를 한 다음에 전체를 list로 묶어줘야 리스트로 사용 가능.)
+        bookmark_list = list(Bookmark.objects.filter(email=email, is_marked=True).values_list('feed_id', flat=True))      # like_feed_list = Feed.objects.filter(id__in=like_list), 여기서 id__in은 feed에 있는 id 중에 like_list를 포함하고 있는 id를 가져오는 것
+        bookmark_feed_list = Feed.objects.filter(id__in=bookmark_list)
 
-        # feed_list = Feed.objects.filter(email=email)
-
-        return render(request, 'content/profile.html', context=dict(# feed_list=feed_list,
-                                                                    # like_feed_list=like_feed_list,
-                                                                    # bookmark_feed_list=bookmark_feed_list,
+        return render(request, 'content/profile.html', context=dict(feed_list=feed_list,
+                                                                    like_feed_list=like_feed_list,
+                                                                    bookmark_feed_list=bookmark_feed_list,
                                                                     user=user))
 
 
@@ -105,9 +111,10 @@ class ToggleLike(APIView):
             is_like = True
         else:
             is_like = False
+
         email = request.session.get('email', None)
 
-        like = Like.objects.filter(feed_id=feed_id, email=email).first()
+        like = Like.objects.filter(feed_id=feed_id, email=email).first()          # 만약, 좋아요를 누른 상태였다면 Like 테이블에서 is_like가 다시 0으로 변환
 
         if like:
             like.is_like = is_like

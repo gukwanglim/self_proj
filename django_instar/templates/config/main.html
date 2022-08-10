@@ -32,7 +32,7 @@
       <div style="display: flex">
         <a href="/" style="color: black"><span class="material-icons" style="padding-right: 10px"> home</span></a>
         <span class="material-icons" style="padding-right: 10px">send</span>
-        <span id="add_feed" class="material-icons-outlined" style="padding-right: 10px">add_box</span>
+        <span id="add_feed" class="material-icons-outlined" style="padding-right: 10px; cursor: pointer;">add_box</span>
         <span class="material-icons-outlined" style="padding-right: 10px">explore</span>
         <span class="material-icons-outlined" style="padding-right: 10px">favorite_border</span>
         
@@ -76,20 +76,12 @@
         <img class="feed_img" src="{% get_media_prefix %}{{ feed.image }}">
         <div class="feed_icon">
           <div>
-            <span class="material-icons-outlined">
-              favorite_border
-            </span>
-            <span class="material-icons-outlined">
-              mode_comment
-            </span>
-            <span class="material-icons-outlined">
-              send
-            </span>
+            <span id="favorite_{{ feed.id }}" feed_id="{{ feed.id }}" class="favorite  material-icons-outlined" style="color: red; cursor: pointer;">{% if feed.is_liked %}favorite{% else %}favorite_border{% endif %}</span>
+            <span class="material-icons-outlined">mode_comment</span>
+            <span class="material-icons-outlined">send</span>
           </div>
           <div>
-            <span class="material-icons-outlined">
-              turned_in_not
-            </span>
+            <span id="bookmark_{{ feed.id }}" feed_id="{{ feed.id }}" class="bookmark material-icons-outlined" style="cursor: pointer">{% if feed.is_marked %}bookmark{% else %}bookmark_border{% endif %}</span>
           </div>
         </div>
         <div class="feed_like">
@@ -313,7 +305,9 @@
               $('#' + reply_id).val('');
           }
       });
-});
+  });
+  
+
   </script>
 
 

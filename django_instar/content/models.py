@@ -18,8 +18,8 @@ class Feed(models.Model):
 class Like(models.Model):
     feed_id = models.IntegerField(default=0)
     email = models.EmailField(default='')
-    is_like = models.BooleanField(default=True)
-
+    is_like = models.BooleanField(default=True)             # 여기서 BooleanField를 사용하지만 Mysql에서는 Boolean이 없기 때문에 tinyint로 들어가게 되고 tinyint(1)은 숫자가 들어갈 경우 True라고 표현할 수 있다.
+                                                            # tinyint(1)은 숫자가 들어갈 경우 True라고 표현할 수 있다. 또한, 0이 들어가게 된다면 False를 뜻하게 된다.
 
 class Reply(models.Model):
     feed_id = models.IntegerField(default=0)

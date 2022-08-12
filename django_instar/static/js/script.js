@@ -420,67 +420,90 @@ $("#button_feed_bookmark_list").click(function (){
 
 // 좋아요 누르기
 $(".favorite").click(function (event) {
-    let feed_id = event.target.attributes.getNamedItem('feed_id').value;
-    let favorite_id = event.target.id;
+    let user = event.target.attributes.getNamedItem('user').value;
+    console.log(user)
 
-    console.log(feed_id);                                                      // 피드가 가진 고유한 id
-    console.log(favorite_id);                                                  // 피드가 가진 고유한 id 앞에 favorite_을 붙인 id
-
-    let favorite_text = $.trim($('#' + favorite_id).html());                   // 여기서 trim은 불필요한 공백을 없애주는 코드, favorite_id를 가진 아이콘을 눌렀을 때 그 아이콘의 이름을 반환.
-
-    console.log(favorite_text);
-
-    if (favorite_text == 'favorite') {                                         // 만약, 반환받은 아이콘이 비어있는 하트라면 하트를 채워서 반환
-        $('#' + favorite_id).html('favorite_border');                          // (main.html에서는 단순하게 데이터베이스에 올라와있는 정보를 기반으로 색을 채운다.)
-    } else {
-        $('#' + favorite_id).html('favorite');
-    }
-
-    $.ajax({                                                                   // 좋아요를 눌렀을 경우, 그 정보를 데이터베이스에 반환.
-        url: "/content/like",
-        data: {
-            feed_id: feed_id,
-            favorite_text: favorite_text
-        },
-        method: "POST",
-        success: function (data) {
-            console.log("성공");
-        },
-        error: function (request, status, error) {
-            console.log("에러");
-        },
-        complete: function () {
-            console.log("완료");
+    if (user == 'None') {
+        flag = confirm("로그인 하시겠습니까?")
+        if (flag) {
+          location.replace('/user/login')
         }
-    });
+      } else {
+
+        let feed_id = event.target.attributes.getNamedItem('feed_id').value;
+        let favorite_id = event.target.id;
+
+        console.log(feed_id);                                                      // 피드가 가진 고유한 id
+        console.log(favorite_id);                                                  // 피드가 가진 고유한 id 앞에 favorite_을 붙인 id
+
+        let favorite_text = $.trim($('#' + favorite_id).html());                   // 여기서 trim은 불필요한 공백을 없애주는 코드, favorite_id를 가진 아이콘을 눌렀을 때 그 아이콘의 이름을 반환.
+
+        console.log(favorite_text);
+
+        if (favorite_text == 'favorite') {                                         // 만약, 반환받은 아이콘이 비어있는 하트라면 하트를 채워서 반환
+            $('#' + favorite_id).html('favorite_border');                          // (main.html에서는 단순하게 데이터베이스에 올라와있는 정보를 기반으로 색을 채운다.)
+        } else {
+            $('#' + favorite_id).html('favorite');
+        }
+
+        $.ajax({                                                                   // 좋아요를 눌렀을 경우, 그 정보를 데이터베이스에 반환.
+            url: "/content/like",
+            data: {
+                feed_id: feed_id,
+                favorite_text: favorite_text
+            },
+            method: "POST",
+            success: function (data) {
+                console.log("성공");
+            },
+            error: function (request, status, error) {
+                console.log("에러");
+            },
+            complete: function () {
+                console.log("완료");
+            }
+        });
+    }
 });
 
 // 북마크 관련
 $(".bookmark").click(function (event) {
-    let feed_id = event.target.attributes.getNamedItem('feed_id').value;
-    let bookmark_id = event.target.id;
-    let bookmark_text = $.trim($('#' + bookmark_id).html());
-    if (bookmark_text == 'bookmark') {
-        $('#' + bookmark_id).html('bookmark_border');
-    } else {
-        $('#' + bookmark_id).html('bookmark');
-    }
+    let user = event.target.attributes.getNamedItem('user').value;
+    console.log(user)
 
-    $.ajax({
-        url: "/content/bookmark",
-        data: {
-            feed_id: feed_id,
-            bookmark_text: bookmark_text
-        },
-        method: "POST",
-        success: function (data) {
-            console.log("성공");
-        },
-        error: function (request, status, error) {
-            console.log("에러");
-        },
-        complete: function () {
-            console.log("완료");
+    if (user == 'None') {
+        flag = confirm("로그인 하시겠습니까?")
+        if (flag) {
+          location.replace('/user/login')
         }
-    });
+      } else {
+
+        let feed_id = event.target.attributes.getNamedItem('feed_id').value;
+        let bookmark_id = event.target.id;
+        let bookmark_text = $.trim($('#' + bookmark_id).html());
+        if (bookmark_text == 'bookmark') {
+            $('#' + bookmark_id).html('bookmark_border');
+        } else {
+            $('#' + bookmark_id).html('bookmark');
+        }
+
+        $.ajax({
+            url: "/content/bookmark",
+            data: {
+                feed_id: feed_id,
+                bookmark_text: bookmark_text
+            },
+            method: "POST",
+            success: function (data) {
+                console.log("성공");
+            },
+            error: function (request, status, error) {
+                console.log("에러");
+            },
+            complete: function () {
+                console.log("완료");
+            }
+        });
+    }
 });
+

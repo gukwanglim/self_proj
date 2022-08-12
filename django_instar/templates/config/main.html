@@ -76,12 +76,12 @@
         <img class="feed_img" src="{% get_media_prefix %}{{ feed.image }}">
         <div class="feed_icon">
           <div>
-            <span id="favorite_{{ feed.id }}" feed_id="{{ feed.id }}" class="favorite  material-icons-outlined" style="color: red; cursor: pointer;">{% if feed.is_liked %}favorite{% else %}favorite_border{% endif %}</span>
+            <span id="favorite_{{ feed.id }}" feed_id="{{ feed.id }}" user="{{ user }}" class="favorite  material-icons-outlined" style="color: red; cursor: pointer;">{% if feed.is_liked %}favorite{% else %}favorite_border{% endif %}</span>
             <span class="material-icons-outlined">mode_comment</span>
             <span class="material-icons-outlined">send</span>
           </div>
           <div>
-            <span id="bookmark_{{ feed.id }}" feed_id="{{ feed.id }}" class="bookmark material-icons-outlined" style="cursor: pointer">{% if feed.is_marked %}bookmark{% else %}bookmark_border{% endif %}</span>
+            <span id="bookmark_{{ feed.id }}" feed_id="{{ feed.id }}" user="{{ user }}" class="bookmark material-icons-outlined" style="cursor: pointer">{% if feed.is_marked %}bookmark{% else %}bookmark_border{% endif %}</span>
           </div>
         </div>
         <div class="feed_like">
@@ -101,7 +101,7 @@
 
         <div style="display:flex; flex-direction: row; align-items: center; border-top: solid 1px #dee2e6 ">
           <input id="reply_{{ feed.id }}" type="text" class="form-control" style="box-shadow: none; border: none; outline: none; font-size: 15px;" placeholder="댓글 달기..">
-          <div feed_id="{{ feed.id }}" class="upload_reply" style="width: 50px;color: cornflowerblue; font-weight: bold">게시</div>
+          <div feed_id="{{ feed.id }}" user="{{ user }}" class="upload_reply" style="width: 50px;color: cornflowerblue; font-weight: bold">게시</div>
         </div>
       </div>
       {% endfor %}
@@ -269,42 +269,52 @@
   <!-- Optional JavaScript; choose one of the two! -->
   <script>
   $(".upload_reply").click(function (event) {
-      let feed_id = event.target.attributes.getNamedItem('feed_id').value;
-      let reply_id = 'reply_' + feed_id;
-      let reply_content = $('#' + reply_id).val();
-    
-      // console.log(feed_id);
-      // console.log(reply_id);
-      // console.log(reply_content);
+    let user = event.target.attributes.getNamedItem('user').value;
+    console.log(user)
 
-      if (reply_content.length <= 0) {
-          alert("댓글을 입력하세요");
-          return 0;
+    if (user == 'None') {
+        flag = confirm("로그인 하시겠습니까?")
+        if (flag) {
+          location.replace('/user/login')
+        }
+      } else {
+        let feed_id = event.target.attributes.getNamedItem('feed_id').value;
+        let reply_id = 'reply_' + feed_id;
+        let reply_content = $('#' + reply_id).val();
+      
+        // console.log(feed_id);
+        // console.log(reply_id);
+        // console.log(reply_content);
+
+        if (reply_content.length <= 0) {
+            alert("댓글을 입력하세요");
+            return 0;
+        }
+
+        $.ajax({
+            url: "/content/reply",
+            data: {
+                feed_id: feed_id,
+                reply_content: reply_content
+            },
+            method: "POST",
+            success: function (data) {
+                console.log("성공");
+                alert("댓글을 작성했습니다.");
+                $("#reply_list_" + feed_id).append("<div class='feed_reply'><span class='feed_txt'><b>{{ user.nickname }}</b> " + reply_content + "</span></div>")
+                // location.replace('/');
+
+            },
+            error: function (request, status, error) {
+                console.log("에러");
+                alert("댓글을 다시 작성해주세요.");
+            },
+            complete: function () {
+                console.log("완료");
+                $('#' + reply_id).val('');
+            }
+        });
       }
-
-      $.ajax({
-          url: "/content/reply",
-          data: {
-              feed_id: feed_id,
-              reply_content: reply_content
-          },
-          method: "POST",
-          success: function (data) {
-              console.log("성공");
-              alert("댓글을 작성했습니다.");
-              $("#reply_list_" + feed_id).append("<div class='feed_reply'><span class='feed_txt'><b>{{ user.nickname }}</b> " + reply_content + "</span></div>")
-              // location.replace('/');
-
-          },
-          error: function (request, status, error) {
-              console.log("에러");
-              alert("댓글을 다시 작성해주세요.");
-          },
-          complete: function () {
-              console.log("완료");
-              $('#' + reply_id).val('');
-          }
-      });
   });
   
 

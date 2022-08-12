@@ -272,3 +272,10 @@ span{
     position: relative;
     padding: 10px;
 }
+
+/* 피드모달 */
+.feed_modal_image_content{
+    width:500px;
+    height: 548px;
+    object-fit: cover;
+}

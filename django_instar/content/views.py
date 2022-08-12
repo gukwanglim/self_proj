@@ -25,9 +25,9 @@ class Main(APIView):
             reply_list = []                                                        # 실제로 사용하는 정보는 닉네임이기 때문에 email을 활용하여 필요한 정보를 뽑아내기 위해 사용한다.
 
             for reply in reply_object_list:
-                user = User.objects.filter(email=reply.email).first()
+                reply_user = User.objects.filter(email=reply.email).first()
                 reply_list.append(dict(reply_content=reply.reply_content,
-                                       nickname=user.nickname))
+                                       nickname=reply_user.nickname))
 
             like_count=Like.objects.filter(feed_id=feed.id, is_like=True).count()                      # 특정 id 값을 가진 피드의 is_like에서 True로 받은 값의 개수만큼 숫자 증가
             is_liked=Like.objects.filter(feed_id=feed.id, email=email, is_like=True).exists()          # 좋아요를 누른 피드(id)에서 만약, 로그인 한 사람의 이메일을 찾아낸다면 exists로 불러내고 하트에 불이 들어올 수 있게 만들기

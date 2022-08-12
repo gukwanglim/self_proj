@@ -279,3 +279,10 @@ span{
     height: 548px;
     object-fit: cover;
 }
+
+.modal_reply_write{
+    display: flex;
+    width: 284px;
+    flex-direction: column;
+    border-left: 1px solid rgba(0, 0, 0, 0.18);;
+}

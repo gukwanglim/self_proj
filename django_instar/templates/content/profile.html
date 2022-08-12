@@ -94,7 +94,7 @@
         <div style="display: flex; flex-direction: row; flex-wrap: wrap; width: 1000px; justify-content: center">
             {% for feed in feed_list %}
                 <div style="cursor: pointer; width: 300px;height: 300px; margin: 10px 5px 0px 5px;">
-                    <div><img id="button_feed_image" style="width: 300px;height: 300px; object-fit: cover" src="{% get_media_prefix %}{{ feed.image }}"></div>
+                    <div><img class="button_feed_image" style="width: 300px;height: 300px; object-fit: cover" src="{% get_media_prefix %}{{ feed.image }}"></div>
                 </div>
             {% endfor %}
         </div>
@@ -103,8 +103,8 @@
     <div id="like_feed_list" style="width: 100%; min-width: 1000px; display: none; align-items: center;justify-content: center">
         <div style="display: flex; flex-direction: row; flex-wrap: wrap; width: 1000px; justify-content: center">
             {% for feed in like_feed_list %}
-                <div style="width: 300px;height: 300px; margin: 10px 5px 0px 5px;">
-                    <div><img style="width: 300px;height: 300px; object-fit: cover" src="{% get_media_prefix %}{{ feed.image }}"></div>
+                <div style="cursor: pointer; width: 300px;height: 300px; margin: 10px 5px 0px 5px;">
+                    <div><img class="button_feed_image" style="width: 300px;height: 300px; object-fit: cover" src="{% get_media_prefix %}{{ feed.image }}"></div>
                 </div>
             {% endfor %}
         </div>
@@ -113,8 +113,8 @@
     <div id="bookmark_feed_list" style="width: 100%; min-width: 1000px; display: none; align-items: center;justify-content: center">
         <div style="display: flex; flex-direction: row; flex-wrap: wrap; width: 1000px; justify-content: center">
             {% for feed in bookmark_feed_list %}
-                <div style="width: 300px;height: 300px; margin: 10px 5px 0px 5px;">
-                    <div><img style="width: 300px;height: 300px; object-fit: cover" src="{% get_media_prefix %}{{ feed.image }}"></div>
+                <div style="cursor: pointer; width: 300px;height: 300px; margin: 10px 5px 0px 5px;">
+                    <div><img class="button_feed_image" style="width: 300px;height: 300px; object-fit: cover" src="{% get_media_prefix %}{{ feed.image }}"></div>
                 </div>
             {% endfor %}
         </div>
@@ -172,6 +172,7 @@
   </div>
 
   <!-- 내 게시물을 눌렀을 시 나타나는 피드모달 -->
+  {% for feed in feed_list %}
   <div id="feed_modal" class="modal modal_overlay_content">
     <div class="modal_window" style="padding-left: 0px;">
       <div class="modal_title"  style="border-bottom: solid 1px rgb(206, 203, 203);">
@@ -184,7 +185,7 @@
 
       <div class="modal_image_content">
         <img id="input_image" class="feed_modal_image_content" src="{% get_media_prefix %}{{ feed.image }}"></img>
-        <div class="modal_content_write">
+        <div class="modal_reply_write">
           <div class="feed_name">
             <div class="profile_box">
               <img id="input_profile_image" class="profile_img" src="{% get_media_prefix %}{{ user.profile_image }}">
@@ -193,16 +194,40 @@
             <span id="input_user_id" class="feed_name_txt"> {{ user.nickname }} </span>
           </div>
           <div style="height: 440px">
-            <textarea id="input_content" class="feed_content_textarea form-control col-sm-5" rows="10" placeholder="설명을 입력하세요..."></textarea>
+            <div class="feed_like" style="display: flex; flex-direction: row; justify-content: space-between;">
+              <div style="display: flex; flex-direction: row;">
+                <span id="favorite_{{ feed.id }}" feed_id="{{ feed.id }}" user="{{ user }}" class="favorite  material-icons-outlined" style="color: red; cursor: pointer;">{% if feed.is_liked %}favorite{% else %}favorite_border{% endif %}</span>
+                <p class="feed_txt"><b>좋아요 {{ feed.like_count }}개</b></p>
+              </div>
+              <span id="bookmark_{{ feed.id }}" feed_id="{{ feed.id }}" user="{{ user }}" class="bookmark material-icons-outlined" style="cursor: pointer">{% if feed.is_marked %}bookmark{% else %}bookmark_border{% endif %}</span>
+            </div>  
+            <div class="feed_content">
+              <p class="feed_txt"> <b> {{ user.nickname }} </b> {{ feed.content }}</p>
+            </div>
+
+            <div id="reply_list_{{ feed.id }}">
+              {% for reply in feed.reply_list %}
+              <div class="feed_reply">
+                <span class="feed_txt"><b>{{ reply.nickname }}</b> {{ reply.reply_content }}</span>
+              </div>
+              {% endfor %}
+            </div>                                         
           </div>
 
           <div style="width: 100%; text-align: center">
-            <button id="button_write_feed" type="button" class="btn btn-primary" style="width: 268px"> 공유하기</button>
+            <div style="display:flex; flex-direction: row; align-items: center; border-top: solid 1px #dee2e6 ">
+              <input id="reply_{{ feed.id }}" type="text" class="form-control" style="box-shadow: none; border: none; outline: none; font-size: 15px;" placeholder="댓글 달기..">
+              <div feed_id="{{ feed.id }}" user="{{ user }}" class="upload_reply" style="width: 50px;color: cornflowerblue; font-weight: bold">게시</div>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
   </div>
+  {% endfor %}
+
+  
 
 
     <!-- Optional JavaScript; choose one of the two! -->
@@ -245,13 +270,65 @@
     }
 
     // 내 게시물에서 사진을 눌렀을 때
-    $("#button_feed_image").click(function (){
-        console.log('사진 눌렀다.')
-        $('#feed_modal').css({
-            top: window.pageYOffset + 'px',
-            display: 'flex'
-        });
+    $(".button_feed_image").on("click", () => {
+      openfeedModal();
     });
+
+    function openfeedModal() {
+      $('#feed_modal').css({
+        top: window.pageYOffset + 'px',
+        display: 'flex'
+        });
+    };
+
+    $(".upload_reply").click(function (event) {
+    let user = event.target.attributes.getNamedItem('user').value;
+    console.log(user)
+
+    if (user == 'None') {
+        flag = confirm("로그인 하시겠습니까?")
+        if (flag) {
+          location.replace('/user/login')
+        }
+      } else {
+        let feed_id = event.target.attributes.getNamedItem('feed_id').value;
+        let reply_id = 'reply_' + feed_id;
+        let reply_content = $('#' + reply_id).val();
+      
+        // console.log(feed_id);
+        // console.log(reply_id);
+        // console.log(reply_content);
+
+        if (reply_content.length <= 0) {
+            alert("댓글을 입력하세요");
+            return 0;
+        }
+
+        $.ajax({
+            url: "/content/reply",
+            data: {
+                feed_id: feed_id,
+                reply_content: reply_content
+            },
+            method: "POST",
+            success: function (data) {
+                console.log("성공");
+                alert("댓글을 작성했습니다.");
+                $("#reply_list_" + feed_id).append("<div class='feed_reply'><span class='feed_txt'><b>{{ user.nickname }}</b> " + reply_content + "</span></div>")
+                // location.replace('/');
+
+            },
+            error: function (request, status, error) {
+                console.log("에러");
+                alert("댓글을 다시 작성해주세요.");
+            },
+            complete: function () {
+                console.log("완료");
+                $('#' + reply_id).val('');
+            }
+        });
+      }
+  });
 
 
 </script>

@@ -17,6 +17,8 @@ class Main(APIView):
         feed_list = []                                                       # content/models.py에서 Feed 테이블을 변경했기 때문에 여러 테이블에서 피드에 필요한 내용들을 뽑아내 리스크로 만들기.
 
         email = request.session.get('email', None)
+        reply_list = []
+        
 
         for feed in feed_object_list:
             user = User.objects.filter(email=feed.email).first()
@@ -44,9 +46,12 @@ class Main(APIView):
                                   is_marked=is_marked
                                   ))
 
-        user = User.objects.filter(email=email).first()
+        user = User.objects.filter(email=email).first()                   # for구문 안에 들어가 있어야만 로그아웃 문제 해결, 그 외 나머지 장소에 있으면 로그아웃 불가능(물론, 위로 올라가도 로그아웃 불가능)
+            # like = Like.objects.filter(email=email).first()
+            # bookmark = Bookmark.objects.filter(email=email).first()
+            # reply = Reply.objects.filter(email=email).first()
 
-        return render(request, "config/main.html", context=dict(feed_list=feed_list, user=user))
+        return render(request, "config/main.html", context=dict(feed_list=feed_list, user=user, reply_list=reply_list))
 
 # # 업로드 된 정보 받기(API 만들기)
 class UploadFeed(APIView):
@@ -77,18 +82,51 @@ class UploadFeed(APIView):
 class Profile(APIView):
     def get(self, request):
         email = request.session.get('email', None)
-        user = User.objects.filter(email=email).first()
                                                                                                                    # 내가 올린 피드, 내가 좋아요를 누른 피드, 내가 북마크를 누른 피드만 불러와 프로필에 저장.
         feed_list = Feed.objects.filter(email=email)
         like_list = list(Like.objects.filter(email=email, is_like=True).values_list('feed_id', flat=True))            # values_list()는 filter로 선택한 데이터 중에서 내가 필요로하는 필드를 선택하여 그것만 가지고 올 수 있게 한다. 
         like_feed_list = Feed.objects.filter(id__in=like_list)                                                            # 또한, values_list() 안의 flat=True는 내가 가져온 데이터를 list의 형태로 가져오는 것이다.(flat=True를 한 다음에 전체를 list로 묶어줘야 리스트로 사용 가능.)
         bookmark_list = list(Bookmark.objects.filter(email=email, is_marked=True).values_list('feed_id', flat=True))      # like_feed_list = Feed.objects.filter(id__in=like_list), 여기서 id__in은 feed에 있는 id 중에 like_list를 포함하고 있는 id를 가져오는 것
         bookmark_feed_list = Feed.objects.filter(id__in=bookmark_list)
+        # 여기까지는 '내 게시물, 좋아요, 북마크'에 들어가는 부분
+
+        # 여기서부터는 '내 게시물, 좋아요, 북마크'의 이미지를 눌렀을 경우 나오는 모달에 들어가는 부분(위의 Main class 부분을 그대로 가져와 Profile class와 겹칟던 부분의 명칭을 수정)
+        feed_object_list = Feed.objects.all().order_by('-id')
+        feed_list_2 = []
+        
+        for feed in feed_object_list:
+            user = User.objects.filter(email=feed.email).first()
+                                                                 
+            reply_object_list = Reply.objects.filter(feed_id=feed.id)               
+            reply_list = []                                                        
+
+            for reply in reply_object_list:
+                reply_user = User.objects.filter(email=reply.email).first()
+                reply_list.append(dict(reply_content=reply.reply_content,
+                                       nickname=reply_user.nickname))
+
+            like_count=Like.objects.filter(feed_id=feed.id, is_like=True).count()                      
+            is_liked=Like.objects.filter(feed_id=feed.id, email=email, is_like=True).exists()          
+
+            is_marked=Bookmark.objects.filter(feed_id=feed.id, email=email, is_marked=True).exists()
+            feed_list_2.append(dict(id=feed.id,                                                             
+                                  image=feed.image,
+                                  content=feed.content,
+                                  like_count=like_count,
+                                  profile_image=user.profile_image,
+                                  nickname=user.nickname,
+                                  reply_list=reply_list,
+                                  is_liked=is_liked,
+                                  is_marked=is_marked
+                                  ))
+
+            user = User.objects.filter(email=email).first()
 
         return render(request, 'content/profile.html', context=dict(feed_list=feed_list,
                                                                     like_feed_list=like_feed_list,
                                                                     bookmark_feed_list=bookmark_feed_list,
-                                                                    user=user))
+                                                                    user=user,
+                                                                    feed_list_2=feed_list_2))
 
 
 class UploadReply(APIView):
@@ -145,6 +183,7 @@ class ToggleBookmark(APIView):
             Bookmark.objects.create(feed_id=feed_id, is_marked=is_marked, email=email)
 
         return Response(status=200)
+
 
 
 
